@@ -1,0 +1,178 @@
+/**
+ * AURA RECEIPT — Generator Page
+ * ------------------------------------------------------------
+ * Simple by default. Advanced behind one tap.
+ *
+ * Layout:
+ *   Desktop (lg+): 2-col grid — form left, sticky preview right
+ *   Mobile:        stacked — form top, preview below, sticky bar bottom
+ *
+ * Validation:
+ *   - Required: businessName, phone, customerName, ≥1 item with price > 0
+ *   - Inline errors under empty fields
+ *   - Action buttons disabled until valid
+ *
+ * Welcome modal:
+ *   - Shown once per browser (via LocalStorage `aura.visited`)
+ *   - Read synchronously in useState initializer → no flicker
+ * ------------------------------------------------------------
+ */
+
+import { useState, useMemo, useEffect } from 'react';
+import { useReceipt } from '../hooks/useReceipt';
+import Header from '../components/Header';
+import WelcomeModal from '../components/WelcomeModal';
+import VendorForm from '../components/VendorForm';
+import CustomerForm from '../components/CustomerForm';
+import LineItemsTable from '../components/LineItemsTable';
+import MoreOptions from '../components/MoreOptions';
+import TotalsBlock from '../components/TotalsBlock';
+import ReceiptPreview from '../components/ReceiptPreview';
+import ActionBar from '../components/ActionBar';
+import DocTypeToggle from '../components/DocTypeToggle';
+
+const VISITED_KEY = 'aura.visited';
+
+const Generator = () => {
+    const receipt = useReceipt();
+
+    // ------------------------------------------------------------
+    // Welcome modal — read synchronously before first paint
+    // ------------------------------------------------------------
+    const [showWelcome, setShowWelcome] = useState(() => {
+        try {
+            return !localStorage.getItem(VISITED_KEY);
+        } catch {
+            return false;
+        }
+    });
+
+    // ------------------------------------------------------------
+    // Validation — recompute on every relevant state change
+    // ------------------------------------------------------------
+    const [touched, setTouched] = useState(false);
+
+    const validation = useMemo(() => {
+        const errors = {};
+        let isValid = true;
+
+        if (!receipt.vendor.businessName?.trim()) {
+            errors.businessName = 'Business name is required';
+            isValid = false;
+        }
+        if (!receipt.vendor.phone?.trim()) {
+            errors.phone = 'Phone is required';
+            isValid = false;
+        }
+        if (!receipt.customer.name?.trim()) {
+            errors.customerName = 'Customer name is required';
+            isValid = false;
+        }
+
+        // Items — need at least one with a valid price
+        const itemErrors = [];
+        let validItemsCount = 0;
+
+        receipt.items.forEach((item, index) => {
+            const hasDescription = item.description?.trim();
+            const price = Number(item.price) || 0;
+
+            if (price > 0) validItemsCount++;
+
+            // Per-item error only when there's partial info but missing something
+            if ((hasDescription || price > 0) && (!hasDescription || price <= 0)) {
+                itemErrors[index] = 'Complete both description and price';
+            } else {
+                itemErrors[index] = null;
+            }
+        });
+
+        if (validItemsCount === 0) {
+            errors.itemsGeneral = 'Add at least one item with a price';
+            isValid = false;
+        }
+
+        if (itemErrors.some(Boolean)) {
+            errors.items = itemErrors;
+            isValid = false;
+        }
+
+        return { errors, isValid };
+    }, [receipt.vendor, receipt.customer, receipt.items]);
+
+    // Mark touched when the user tries to act and fails
+    useEffect(() => {
+        if (!validation.isValid) return;
+        setTouched(true);
+    }, [validation.isValid]);
+
+    // Only surface field errors after the user has attempted an action
+    // OR after they've typed something in that field
+    const visibleErrors = touched ? validation.errors : {};
+
+    return (
+        <div className="min-h-screen water-bg print:bg-white">
+
+            {/* Welcome modal — only on first ever visit */}
+            {showWelcome && (
+                <WelcomeModal onClose={() => setShowWelcome(false)} />
+            )}
+
+            {/* Header */}
+            <div className="print:hidden">
+                <Header />
+            </div>
+
+            {/* Main */}
+            <main className="max-w-[1400px] mx-auto px-4 md:px-6 lg:px-8 py-6 md:py-10 pb-28 lg:pb-10 print:p-0 print:max-w-none">
+                <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] gap-6 lg:gap-10 print:block">
+
+                    {/* ============================================================
+              LEFT — Form (simple by default)
+              ============================================================ */}
+                    <section className="space-y-4 print:hidden min-w-0">
+
+                        <DocTypeToggle receipt={receipt} />
+
+                        {/* Business + phone */}
+                        <VendorForm receipt={receipt} errors={visibleErrors} />
+
+                        {/* Customer */}
+                        <CustomerForm receipt={receipt} errors={visibleErrors} />
+
+                        {/* Items */}
+                        <LineItemsTable receipt={receipt} errors={visibleErrors} />
+
+                        {/* Live totals summary — always visible so users see the math */}
+                        <TotalsBlock receipt={receipt} />
+
+                        {/* Advanced — collapsible */}
+                        <MoreOptions receipt={receipt} />
+
+                        {/* Desktop action bar */}
+                        <div className="hidden lg:block">
+                            <ActionBar receipt={receipt} validation={validation} />
+                        </div>
+
+                        {/* Extra bottom space for the mobile fixed bar */}
+                        <div className="h-20 lg:h-4" />
+                    </section>
+
+                    {/* ============================================================
+              RIGHT — Preview (this prints)
+              ============================================================ */}
+                    <section className="lg:sticky lg:top-6 lg:self-start print:static print:top-0 min-w-0">
+                        <ReceiptPreview receipt={receipt} />
+                    </section>
+
+                </div>
+            </main>
+
+            {/* Mobile fixed action bar */}
+            <ActionBar receipt={receipt} validation={validation} />
+
+        </div>
+    );
+};
+
+export default Generator;

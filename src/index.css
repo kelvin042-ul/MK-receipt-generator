@@ -1,0 +1,186 @@
+/* ============================================================
+   AURA RECEIPT — Global Styles
+   Access Bank-inspired palette. Creamy premium feel.
+   Light mode enforced. Print-ready.
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+@import "tailwindcss";
+
+/* ------------------------------------------------------------
+   LIGHT MODE — locked. Do not touch.
+   ------------------------------------------------------------ */
+:root {
+  color-scheme: light only;
+  forced-color-adjust: none;
+}
+
+html,
+body {
+  background-color: #FBF7F0 !important;
+  /* creamy */
+  color: #0F172A !important;
+}
+
+@media (prefers-color-scheme: dark) {
+
+  html,
+  body {
+    background-color: #FBF7F0 !important;
+    color: #0F172A !important;
+  }
+}
+
+/* ------------------------------------------------------------
+   THEME TOKENS
+   ------------------------------------------------------------ */
+@theme {
+  /* Access Bank–inspired palette */
+  --color-brand-navy: #003366;
+  /* deep navy — headers, totals */
+  --color-brand-navy-soft: #0A4A80;
+  /* hover states */
+  --color-brand-orange: #F58220;
+  /* warm orange — accent */
+  --color-brand-orange-soft: #FFEDD5;
+  /* light orange tint */
+  --color-brand-ink: #0F172A;
+  /* near-black body text */
+  --color-brand-muted: #64748B;
+  /* labels, secondary */
+  --color-brand-surface: #F5F6F8;
+  /* light gray cards */
+  --color-brand-cream: #FBF7F0;
+  /* page background */
+  --color-brand-cream-deep: #F5EFE3;
+  /* deeper cream for panels */
+
+  --font-sans: 'Poppins', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+
+  --shadow-receipt: 0 4px 24px -8px rgba(0, 51, 102, 0.10), 0 2px 8px -4px rgba(0, 51, 102, 0.05);
+  --shadow-panel: 0 1px 3px rgba(15, 23, 42, 0.04);
+}
+
+/* ------------------------------------------------------------
+   BASE
+   ------------------------------------------------------------ */
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    @apply font-sans antialiased;
+    font-family: 'Poppins', system-ui, sans-serif;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  /* iOS zoom fix */
+  input,
+  select,
+  textarea,
+  [contenteditable="true"] {
+    font-size: 16px !important;
+  }
+
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  input[type="number"] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+  }
+
+  ::selection {
+    background: #003366;
+    color: white;
+  }
+}
+
+@media screen and (max-width: 768px) {
+
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* ------------------------------------------------------------
+   UTILITIES
+   ------------------------------------------------------------ */
+@layer utilities {
+
+  /* Creamy gradient background — soft, premium, not distracting */
+  .water-bg {
+    background:
+      radial-gradient(at 0% 0%, rgba(245, 130, 32, 0.05) 0px, transparent 45%),
+      radial-gradient(at 100% 0%, rgba(0, 51, 102, 0.04) 0px, transparent 50%),
+      radial-gradient(at 50% 100%, rgba(245, 130, 32, 0.03) 0px, transparent 55%),
+      #FBF7F0;
+    background-attachment: fixed;
+  }
+
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .thin-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .thin-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .thin-scrollbar::-webkit-scrollbar-thumb {
+    background: #E2D9C8;
+    border-radius: 999px;
+  }
+}
+
+/* ------------------------------------------------------------
+   PRINT
+   ------------------------------------------------------------ */
+@media print {
+  @page {
+    size: A4;
+    margin: 12mm;
+  }
+
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+
+  html,
+  body {
+    background: #ffffff !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+
+  .print-reset-shadow {
+    box-shadow: none !important;
+    border-radius: 0 !important;
+  }
+
+  .print-no-break {
+    page-break-inside: avoid;
+  }
+}
