@@ -16,7 +16,10 @@ const ActionBar = ({ receipt, validation, onAttempt, onSaved }) => {
     const isValid = validation?.isValid ?? true;
 
     const handlePrepare = async () => {
-        if (!isValid) { onAttempt?.(); return; }
+        if (!isValid) {
+            onAttempt?.();
+            return;
+        }
         if (preparing || readyToShare) return;
 
         sharingRef.current = true;
@@ -41,25 +44,41 @@ const ActionBar = ({ receipt, validation, onAttempt, onSaved }) => {
     `;
             document.body.appendChild(hiddenContainer);
 
-            // 2. Render the fixed canvas
+            // 2. First render at scale = 1 so we can measure natural height
             root = createRoot(hiddenContainer);
-            root.render(<ReceiptCanvas receipt={receipt} />);
+            root.render(<ReceiptCanvas receipt={receipt} scale={1} />);
 
-            // 3. Wait for React + fonts + images
-            await new Promise(r => setTimeout(r, 600));
+            // Wait for React + fonts
+            await new Promise((r) => setTimeout(r, 500));
             if (document.fonts?.ready) await document.fonts.ready;
 
-            // Extra: wait for logo if present
+            // Wait for logo if it exists
             const logo = hiddenContainer.querySelector('img');
             if (logo && !logo.complete) {
-                await new Promise(resolve => {
+                await new Promise((resolve) => {
                     logo.onload = resolve;
                     logo.onerror = resolve;
-                    setTimeout(resolve, 1500); // safety timeout
+                    setTimeout(resolve, 1200);
                 });
             }
 
-            // 4. Capture ONLY the element inside the hidden container
+            // 3. Measure the natural height of the content
+            const canvasEl = hiddenContainer.querySelector('#receipt-capture-canvas');
+            const innerContent = canvasEl?.firstElementChild;
+            const naturalHeight = innerContent ? innerContent.scrollHeight : 1350;
+
+            // 4. Calculate the best scale so content fills the 4:5 box nicely
+            const availableHeight = 1350 - 40; // small safety margin
+            let scale = availableHeight / naturalHeight;
+
+            // Clamp so text never becomes too big or too small
+            scale = Math.min(1.22, Math.max(0.70, scale));
+
+            // 5. Re-render with the calculated scale
+            root.render(<ReceiptCanvas receipt={receipt} scale={scale} />);
+            await new Promise((r) => setTimeout(r, 250));
+
+            // 6. Capture the final image
             const el = hiddenContainer.querySelector('#receipt-capture-canvas');
             if (!el) throw new Error('Canvas element not found');
 
@@ -71,7 +90,6 @@ const ActionBar = ({ receipt, validation, onAttempt, onSaved }) => {
             console.error('Preparation failed:', err);
             alert('Could not create the receipt image. Please try again.');
         } finally {
-            // 5. Always clean up
             if (root) root.unmount();
             if (hiddenContainer && hiddenContainer.parentNode) {
                 document.body.removeChild(hiddenContainer);

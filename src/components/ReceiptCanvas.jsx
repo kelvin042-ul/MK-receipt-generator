@@ -1,7 +1,7 @@
 import { formatAmount } from '../utils/currency';
 import { numberToWords } from '../utils/numberToWords';
 
-const ReceiptCanvas = ({ receipt }) => {
+const ReceiptCanvas = ({ receipt, scale = 1 }) => {
     const {
         vendor, customer, docType, docNumber, date, dueDate, currency, notes,
         items, subtotal, discount, tax, total,
@@ -27,83 +27,150 @@ const ReceiptCanvas = ({ receipt }) => {
 
     return (
         <div
-            id="receipt-capture-canvas"   // ← changed (unique ID)
-            className="w-[1080px] h-[1350px] bg-white flex flex-col p-16 box-border"
-            style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }} // optional safety
+            id="receipt-capture-canvas"
+            className="w-[1080px] h-[1350px] bg-white overflow-hidden box-border"
         >
-            <div className="flex-1">
-                {/* HEADER */}
-                <div className="flex justify-between items-start mb-10">
-                    <div className="flex items-center gap-2">
-                        {vendor.logoUrl ? (
-                            <img src={vendor.logoUrl} alt="Logo" className="h-12 max-w-[160px] object-contain" />
-                        ) : (
-                            <div className="text-2xl font-bold text-brand-navy uppercase tracking-wide">
-                                {vendor.businessName || 'Your Business'}
+            {/* This inner div is what we scale */}
+            <div
+                style={{
+                    width: '1080px',
+                    transform: `scale(${scale})`,
+                    transformOrigin: 'top center',
+                    padding: '64px',
+                }}
+                className="flex flex-col min-h-[1350px]"
+            >
+                <div className="flex-1">
+                    {/* HEADER */}
+                    <div className="flex justify-between items-start mb-10">
+                        <div className="flex items-center gap-2">
+                            {vendor.logoUrl ? (
+                                <img
+                                    src={vendor.logoUrl}
+                                    alt="Logo"
+                                    className="h-12 max-w-[160px] object-contain"
+                                />
+                            ) : (
+                                <div className="text-2xl font-bold text-brand-navy uppercase tracking-wide">
+                                    {vendor.businessName || 'Your Business'}
+                                </div>
+                            )}
+                        </div>
+                        <div className="text-right">
+                            <div className="text-[12px] font-bold text-brand-orange tracking-wider">
+                                {vendor.phone ? 'Contact Us' : 'Thank You'}
                             </div>
-                        )}
-                    </div>
-                    <div className="text-right">
-                        <div className="text-[12px] font-bold text-brand-orange tracking-wider">
-                            {vendor.phone ? 'Contact Us' : 'Thank You'}
                         </div>
                     </div>
-                </div>
 
-                {/* TITLE */}
-                <div className="text-center mb-10">
-                    <h1 className="text-[26px] font-bold text-brand-navy uppercase tracking-tight mb-2">
-                        {docType === 'invoice' ? 'INVOICE' : 'TRANSACTION RECEIPT'}
-                    </h1>
-                    <p className="text-[13px] text-gray-500">
-                        Generated on {formatDate(date)} · {docNumber || '—'}
-                    </p>
-                </div>
+                    {/* TITLE */}
+                    <div className="text-center mb-10">
+                        <h1 className="text-[26px] font-bold text-brand-navy uppercase tracking-tight mb-2">
+                            {docType === 'invoice' ? 'INVOICE' : 'TRANSACTION RECEIPT'}
+                        </h1>
+                        <p className="text-[13px] text-gray-500">
+                            Generated on {formatDate(date)} · {docNumber || '—'}
+                        </p>
+                    </div>
 
-                <div className="border-t border-gray-200">
-                    <Row label="Transaction Amount" value={<span className="text-[20px] font-bold">{formatAmount(total, currency)}</span>} />
+                    <div className="border-t border-gray-200">
+                        <Row
+                            label="Transaction Amount"
+                            value={
+                                <span className="text-[20px] font-bold">
+                                    {formatAmount(total, currency)}
+                                </span>
+                            }
+                        />
 
-                    <Row label="Billed To" value={
-                        <>
-                            <div className="font-bold text-[16px]">{customer.name || 'Customer Name'}</div>
-                            {customer.phone && <div className="text-[14px] text-gray-600 mt-1">{customer.phone}</div>}
-                        </>
-                    } />
-
-                    {items.map((item, index) => {
-                        const lineTotal = (Number(item.qty) || 0) * (Number(item.price) || 0);
-                        if (!item.description && lineTotal === 0) return null;
-                        return (
-                            <Row
-                                key={item.id}
-                                label={index === 0 ? "Description" : ""}
-                                value={
-                                    <div className="flex justify-between w-full gap-4">
-                                        <span>{item.description || 'Item'} <span className="text-gray-400 text-xs ml-1 whitespace-nowrap">({item.qty} × {formatAmount(item.price, currency)})</span></span>
-                                        <span className="font-mono font-semibold whitespace-nowrap">{formatAmount(lineTotal, currency)}</span>
+                        <Row
+                            label="Billed To"
+                            value={
+                                <>
+                                    <div className="font-bold text-[16px]">
+                                        {customer.name || 'Customer Name'}
                                     </div>
+                                    {customer.phone && (
+                                        <div className="text-[14px] text-gray-600 mt-1">
+                                            {customer.phone}
+                                        </div>
+                                    )}
+                                </>
+                            }
+                        />
+
+                        {items.map((item, index) => {
+                            const lineTotal = (Number(item.qty) || 0) * (Number(item.price) || 0);
+                            if (!item.description && lineTotal === 0) return null;
+                            return (
+                                <Row
+                                    key={item.id}
+                                    label={index === 0 ? 'Description' : ''}
+                                    value={
+                                        <div className="flex justify-between w-full gap-4">
+                                            <span>
+                                                {item.description || 'Item'}{' '}
+                                                <span className="text-gray-400 text-xs ml-1 whitespace-nowrap">
+                                                    ({item.qty} × {formatAmount(item.price, currency)})
+                                                </span>
+                                            </span>
+                                            <span className="font-mono font-semibold whitespace-nowrap">
+                                                {formatAmount(lineTotal, currency)}
+                                            </span>
+                                        </div>
+                                    }
+                                />
+                            );
+                        })}
+
+                        {subtotal !== total && (
+                            <Row label="Subtotal" value={formatAmount(subtotal, currency)} />
+                        )}
+                        {discount > 0 && (
+                            <Row
+                                label="Discount"
+                                value={
+                                    <span className="text-brand-orange">
+                                        -{formatAmount(discount, currency)}
+                                    </span>
                                 }
                             />
-                        );
-                    })}
+                        )}
+                        {tax > 0 && (
+                            <Row label="Tax / VAT" value={formatAmount(tax, currency)} />
+                        )}
 
-                    {subtotal !== total && <Row label="Subtotal" value={formatAmount(subtotal, currency)} />}
-                    {discount > 0 && <Row label="Discount" value={<span className="text-brand-orange">-{formatAmount(discount, currency)}</span>} />}
-                    {tax > 0 && <Row label="Tax / VAT" value={formatAmount(tax, currency)} />}
+                        <Row
+                            label="Amount in Words"
+                            value={
+                                <span className="text-[14px] italic">
+                                    {numberToWords(total, currency)}
+                                </span>
+                            }
+                        />
 
-                    <Row label="Amount in Words" value={<span className="text-[14px] italic">{numberToWords(total, currency)}</span>} />
-
-                    {notes && <Row label="Notes" value={<span className="text-[14px] text-gray-600">{notes}</span>} isLast />}
+                        {notes && (
+                            <Row
+                                label="Notes"
+                                value={<span className="text-[14px] text-gray-600">{notes}</span>}
+                                isLast
+                            />
+                        )}
+                    </div>
                 </div>
-            </div>
 
-            {/* FOOTER */}
-            <div className="mt-auto pt-6 border-t border-gray-200">
-                <p className="text-[12px] text-gray-500 leading-relaxed">
-                    If you have any questions, please call <span className="font-semibold text-brand-navy">{vendor.phone || 'our contact centre'}</span>.
-                </p>
-                <div className="text-[10px] text-gray-400 mt-2">
-                    Powered by Aura Receipt
+                {/* FOOTER */}
+                <div className="mt-auto pt-6 border-t border-gray-200">
+                    <p className="text-[12px] text-gray-500 leading-relaxed">
+                        If you have any questions, please call{' '}
+                        <span className="font-semibold text-brand-navy">
+                            {vendor.phone || 'our contact centre'}
+                        </span>
+                        .
+                    </p>
+                    <div className="text-[10px] text-gray-400 mt-2">
+                        Powered by Aura Receipt
+                    </div>
                 </div>
             </div>
         </div>
