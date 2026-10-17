@@ -99,17 +99,22 @@ export const useReceipt = () => {
     // ISSUE DOC NUMBER ON FIRST MOUNT + WHEN DOC TYPE CHANGES
     // ============================================================
     useEffect(() => {
-        // Issue a fresh number only if we don't already have one
         if (!docNumber) {
             setDocNumber(issueNextDocNumber(docType));
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    // When user switches receipt ↔ invoice, issue a new number
+    // Switching type: swap the PREFIX only, keep the numeric part.
+    // Does NOT burn a new counter value.
     const switchDocType = useCallback((nextType) => {
         setDocType(nextType);
-        setDocNumber(issueNextDocNumber(nextType));
+        setDocNumber((prev) => {
+            if (!prev) return issueNextDocNumber(nextType);
+            // REC-2025-007 → INV-2025-007 (or vice versa)
+            const replaced = prev.replace(/^(REC|INV)/, nextType === 'invoice' ? 'INV' : 'REC');
+            return replaced;
+        });
     }, []);
 
     // ============================================================
@@ -161,25 +166,17 @@ export const useReceipt = () => {
             return sum + qty * price;
         }, 0);
 
-        // Discount
-        const discount =
+        const rawDiscount =
             discountType === 'percent'
                 ? (subtotal * (Number(discountValue) || 0)) / 100
                 : parseAmount(discountValue);
 
-        const afterDiscount = Math.max(subtotal - discount, 0);
-
-        // Tax on discounted amount
+        const discount = Math.min(rawDiscount, subtotal); // capped once
+        const afterDiscount = subtotal - discount;
         const tax = (afterDiscount * (Number(taxRate) || 0)) / 100;
-
         const total = afterDiscount + tax;
 
-        return {
-            subtotal,
-            discount: Math.min(discount, subtotal), // never exceed subtotal
-            tax,
-            total,
-        };
+        return { subtotal, discount, tax, total };
     }, [items, discountValue, discountType, taxRate]);
 
     // ============================================================
@@ -201,6 +198,26 @@ export const useReceipt = () => {
         setDueDate('');
         setDocNumber(issueNextDocNumber(docType));
     }, [docType]);
+
+    // Add inside useReceipt, near newDocument:
+
+    const loadDocument = useCallback((state) => {
+        if (!state) return;
+        setVendorState((prev) => ({ ...prev, ...state.vendor })); // keep vendor, overlay saved
+        setCustomerState(state.customer || { name: '', phone: '', whatsapp: '', address: '' });
+        setDocType(state.docType || 'receipt');
+        setDocNumber(state.docNumber || '');
+        setDate(state.date || today());
+        setDueDate(state.dueDate || '');
+        setCurrency(state.currency || 'NGN');
+        setNotes(state.notes || '');
+        setItems(state.items?.length ? state.items : [emptyItem()]);
+        setDiscountValue(state.discountValue ?? 0);
+        setDiscountType(state.discountType || 'fixed');
+        setTaxRate(state.taxRate ?? 0);
+    }, []);
+
+    // And add `loadDocument` to the return object
 
     /**
      * Full reset — wipes everything including saved vendor profile.
@@ -271,6 +288,7 @@ export const useReceipt = () => {
 
         // Document actions
         newDocument,
+        loadDocument,
         resetAll,
     };
 };

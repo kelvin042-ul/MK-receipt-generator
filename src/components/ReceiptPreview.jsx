@@ -361,6 +361,20 @@ const ReceiptPreview = ({ receipt }) => {
           BOTTOM ORANGE STRIPE
           ============================================================ */}
             <div className="h-1.5 bg-brand-orange print:h-1" />
+            {/* Powered-by strip — every shared receipt advertises you */}
+            <div className="px-5 sm:px-6 md:px-8 pb-4 print:px-6">
+                <div className="pt-4 border-t border-gray-100 flex items-center justify-center gap-1.5">
+                    <span className="text-[9px] text-gray-400 tracking-wide">
+                        Made with
+                    </span>
+                    <span className="text-[9px] font-semibold text-brand-navy tracking-wide">
+                        Aura Receipt
+                    </span>
+                    <span className="text-[9px] text-gray-400">
+                        · aurareceipt.app
+                    </span>
+                </div>
+            </div>
 
         </div>
     );

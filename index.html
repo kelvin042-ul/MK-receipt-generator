@@ -1,13 +1,107 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>e-commerce</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- ============================================================
+       LIGHT MODE — loads before CSS, prevents dark flash
+       ============================================================ -->
+  <meta name="color-scheme" content="light only" />
+  <meta name="supported-color-schemes" content="light" />
+  <meta name="theme-color" content="#FBF7F0" />
+
+  <!-- ============================================================
+       TITLE & SEO
+       ============================================================ -->
+  <title>Aura Receipt — Professional Receipts in 30 Seconds</title>
+
+  <meta name="description"
+    content="Create and share professional receipts and invoices on WhatsApp in 30 seconds. Free, no signup, works offline. Perfect for Instagram vendors, freelancers, and small businesses in Nigeria and beyond." />
+  <meta name="keywords"
+    content="receipt generator, invoice generator, WhatsApp receipt, Nigeria receipt, free receipt maker, Instagram vendor receipt, freelancer invoice, online receipt, small business receipt" />
+  <meta name="author" content="Aura Receipt" />
+  <meta name="robots" content="index, follow" />
+
+  <!-- ============================================================
+       OPEN GRAPH — WhatsApp / Instagram / Twitter link previews
+       IMPORTANT: replace YOUR-URL with your real deployed URL
+       ============================================================ -->
+  <meta property="og:title" content="Aura Receipt — Professional Receipts in 30 Seconds" />
+  <meta property="og:description"
+    content="Create and share professional receipts and invoices on WhatsApp in 30 seconds. Free, no signup, works offline." />
+  <meta property="og:image" content="https://YOUR-URL.vercel.app/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:type" content="image/png" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://YOUR-URL.vercel.app/" />
+  <meta property="og:site_name" content="Aura Receipt" />
+
+  <!-- ============================================================
+       TWITTER CARD
+       ============================================================ -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Aura Receipt — Professional Receipts in 30 Seconds" />
+  <meta name="twitter:description"
+    content="Create and share professional receipts and invoices on WhatsApp in 30 seconds." />
+  <meta name="twitter:image" content="https://YOUR-URL.vercel.app/og-image.png" />
+
+  <!-- ============================================================
+       FAVICON
+       ============================================================ -->
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/favicon.png" />
+
+  <!-- ============================================================
+       FONTS — preload for instant text rendering
+       ============================================================ -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap"
+    rel="stylesheet">
+
+  <!-- ============================================================
+       STRUCTURED DATA
+       ============================================================ -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Aura Receipt",
+    "url": "https://YOUR-URL.vercel.app/",
+    "description": "Professional receipt and invoice generator for vendors and freelancers.",
+    "applicationCategory": "BusinessApplication",
+    "operatingSystem": "Any",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "NGN"
+    }
+  }
+  </script>
+
+  <!-- ============================================================
+       INLINE LIGHT MODE — instant paint before CSS loads
+       ============================================================ -->
+  <style>
+    html,
+    body {
+      background-color: #fbf7f0;
+      color: #0f172a;
+      color-scheme: light only;
+      margin: 0;
+      font-family: 'Poppins', system-ui, sans-serif;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.jsx"></script>
+</body>
+
 </html>

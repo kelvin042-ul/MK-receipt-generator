@@ -9,17 +9,22 @@
  *
  * Validation:
  *   - Required: businessName, phone, customerName, ≥1 item with price > 0
- *   - Inline errors under empty fields
+ *   - Inline errors appear after the user attempts to share while invalid
  *   - Action buttons disabled until valid
  *
  * Welcome modal:
  *   - Shown once per browser (via LocalStorage `aura.visited`)
  *   - Read synchronously in useState initializer → no flicker
+ *
+ * Recent receipts:
+ *   - Last 5 shared docs, restorable into the form for resend
+ *   - Refreshed via onSaved callback from ActionBar
  * ------------------------------------------------------------
  */
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useReceipt } from '../hooks/useReceipt';
+import { loadRecent } from '../utils/storage';
 import Header from '../components/Header';
 import WelcomeModal from '../components/WelcomeModal';
 import VendorForm from '../components/VendorForm';
@@ -30,6 +35,7 @@ import TotalsBlock from '../components/TotalsBlock';
 import ReceiptPreview from '../components/ReceiptPreview';
 import ActionBar from '../components/ActionBar';
 import DocTypeToggle from '../components/DocTypeToggle';
+import RecentReceipts from '../components/RecentReceipts';
 
 const VISITED_KEY = 'aura.visited';
 
@@ -48,9 +54,23 @@ const Generator = () => {
     });
 
     // ------------------------------------------------------------
+    // Recent receipts — loaded once, refreshed after each share
+    // ------------------------------------------------------------
+    const [recent, setRecent] = useState(() => loadRecent());
+
+    const refreshRecent = useCallback(() => {
+        setRecent(loadRecent());
+    }, []);
+
+    const handleRestore = useCallback((state) => {
+        receipt.loadDocument(state);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, [receipt]);
+
+    // ------------------------------------------------------------
     // Validation — recompute on every relevant state change
     // ------------------------------------------------------------
-    const [touched, setTouched] = useState(false);
+    const [attempted, setAttempted] = useState(false);
 
     const validation = useMemo(() => {
         const errors = {};
@@ -100,15 +120,18 @@ const Generator = () => {
         return { errors, isValid };
     }, [receipt.vendor, receipt.customer, receipt.items]);
 
-    // Mark touched when the user tries to act and fails
+    // Reset "attempted" flag once the doc becomes valid,
+    // so errors clear the moment the user fixes everything.
     useEffect(() => {
-        if (!validation.isValid) return;
-        setTouched(true);
+        if (validation.isValid) setAttempted(false);
     }, [validation.isValid]);
 
-    // Only surface field errors after the user has attempted an action
-    // OR after they've typed something in that field
-    const visibleErrors = touched ? validation.errors : {};
+    // Errors stay hidden until the user taps Share while invalid.
+    const visibleErrors = attempted ? validation.errors : {};
+
+    const handleAttempt = useCallback(() => {
+        setAttempted(true);
+    }, []);
 
     return (
         <div className="min-h-screen water-bg print:bg-white">
@@ -128,8 +151,8 @@ const Generator = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] gap-6 lg:gap-10 print:block">
 
                     {/* ============================================================
-              LEFT — Form (simple by default)
-              ============================================================ */}
+                        LEFT — Form (simple by default)
+                        ============================================================ */}
                     <section className="space-y-4 print:hidden min-w-0">
 
                         <DocTypeToggle receipt={receipt} />
@@ -143,15 +166,23 @@ const Generator = () => {
                         {/* Items */}
                         <LineItemsTable receipt={receipt} errors={visibleErrors} />
 
-                        {/* Live totals summary — always visible so users see the math */}
+                        {/* Live totals summary */}
                         <TotalsBlock receipt={receipt} />
 
                         {/* Advanced — collapsible */}
                         <MoreOptions receipt={receipt} />
 
+                        {/* Recent — restorable docs */}
+                        <RecentReceipts recent={recent} onRestore={handleRestore} />
+
                         {/* Desktop action bar */}
                         <div className="hidden lg:block">
-                            <ActionBar receipt={receipt} validation={validation} />
+                            <ActionBar
+                                receipt={receipt}
+                                validation={validation}
+                                onAttempt={handleAttempt}
+                                onSaved={refreshRecent}
+                            />
                         </div>
 
                         {/* Extra bottom space for the mobile fixed bar */}
@@ -159,8 +190,8 @@ const Generator = () => {
                     </section>
 
                     {/* ============================================================
-              RIGHT — Preview (this prints)
-              ============================================================ */}
+                        RIGHT — Preview (this prints)
+                        ============================================================ */}
                     <section className="lg:sticky lg:top-6 lg:self-start print:static print:top-0 min-w-0">
                         <ReceiptPreview receipt={receipt} />
                     </section>
@@ -169,7 +200,12 @@ const Generator = () => {
             </main>
 
             {/* Mobile fixed action bar */}
-            <ActionBar receipt={receipt} validation={validation} />
+            <ActionBar
+                receipt={receipt}
+                validation={validation}
+                onAttempt={handleAttempt}
+                onSaved={refreshRecent}
+            />
 
         </div>
     );

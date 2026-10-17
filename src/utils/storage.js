@@ -112,3 +112,19 @@ export const issueNextDocNumber = (type) => {
     const next = incrementCounter(type);
     return buildDocNumber(type, next);
 };
+
+const RECENT_KEY = `${PREFIX}recent`;
+const MAX_RECENT = 5;
+
+export const loadRecent = () => readJSON(RECENT_KEY, []);
+
+export const saveRecent = (snapshot) => {
+    const existing = loadRecent();
+    // newest first, dedupe by docNumber, cap at 5
+    const next = [snapshot, ...existing.filter((r) => r.docNumber !== snapshot.docNumber)]
+        .slice(0, MAX_RECENT);
+    writeJSON(RECENT_KEY, next);
+    return next;
+};
+
+export const clearRecent = () => removeKey(RECENT_KEY);
