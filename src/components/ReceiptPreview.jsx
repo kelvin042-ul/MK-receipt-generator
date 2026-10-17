@@ -32,7 +32,6 @@ const ReceiptPreview = ({ receipt }) => {
 
     return (
         <div
-            id="receipt-capture"
             className="w-full bg-white print:border-0 print:shadow-none print:rounded-none"
         >
             {/* Strict max-width and constant padding. No justify-between. */}
