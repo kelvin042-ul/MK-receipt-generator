@@ -18,9 +18,9 @@ const ReceiptPreview = ({ receipt }) => {
 
     const docLabel = docType === 'invoice' ? 'INVOICE' : 'TRANSACTION RECEIPT';
 
-    // Helper to render a row exactly like the Access Bank image
+    // Strict, non-stretching row layout
     const Row = ({ label, value, isLast }) => (
-        <div className={`flex flex-col sm:flex-row sm:items-start py-4 ${!isLast ? 'border-b border-gray-200' : ''}`}>
+        <div className={`flex flex-col sm:flex-row sm:items-start py-3.5 ${!isLast ? 'border-b border-gray-200' : ''}`}>
             <div className="w-full sm:w-48 flex-shrink-0 text-[13px] font-bold text-brand-orange mb-1 sm:mb-0">
                 {label}
             </div>
@@ -33,10 +33,12 @@ const ReceiptPreview = ({ receipt }) => {
     return (
         <div
             id="receipt-capture"
-            className="w-full bg-white overflow-hidden print:border-0 print:shadow-none print:rounded-none"
+            className="w-full bg-white print:border-0 print:shadow-none print:rounded-none"
         >
-            <div className="p-6 sm:p-10 max-w-2xl mx-auto">
-                {/* HEADER: Logo & Tagline */}
+            {/* Strict max-width and constant padding. No justify-between. */}
+            <div className="p-8 max-w-[800px] mx-auto">
+
+                {/* HEADER */}
                 <div className="flex justify-between items-start mb-8">
                     <div className="flex items-center gap-2">
                         {vendor.logoUrl ? (
@@ -47,8 +49,6 @@ const ReceiptPreview = ({ receipt }) => {
                             </div>
                         )}
                     </div>
-
-                    {/* Optional tagline - we use email or phone here */}
                     <div className="text-right">
                         <div className="text-[10px] font-bold text-brand-orange tracking-wider">
                             {vendor.phone ? 'Contact Us' : 'Thank You'}
@@ -66,12 +66,13 @@ const ReceiptPreview = ({ receipt }) => {
                     </p>
                 </div>
 
-                {/* DETAILS ROWS */}
+                {/* DETAILS ROWS - Stacks strictly without stretching */}
                 <div className="border-t border-gray-200">
-                    <Row label="Transaction Amount" value={formatAmount(total, currency)} />
+                    <Row label="Transaction Amount" value={<span className="text-[18px] font-bold">{formatAmount(total, currency)}</span>} />
+
                     <Row label="Billed To" value={
                         <>
-                            <div className="font-bold">{customer.name || 'Customer Name'}</div>
+                            <div className="font-bold text-[15px]">{customer.name || 'Customer Name'}</div>
                             {customer.phone && <div className="text-[12px] text-gray-600 mt-0.5">{customer.phone}</div>}
                             {customer.address && <div className="text-[12px] text-gray-600 mt-0.5">{customer.address}</div>}
                         </>
@@ -86,8 +87,8 @@ const ReceiptPreview = ({ receipt }) => {
                                 label={index === 0 ? "Description" : ""}
                                 value={
                                     <div className="flex justify-between w-full gap-4">
-                                        <span>{item.description || 'Item'} <span className="text-gray-400 text-xs ml-1">({item.qty} × {formatAmount(item.price, currency)})</span></span>
-                                        <span className="font-mono font-semibold">{formatAmount(lineTotal, currency)}</span>
+                                        <span>{item.description || 'Item'} <span className="text-gray-400 text-xs ml-1 whitespace-nowrap">({item.qty} × {formatAmount(item.price, currency)})</span></span>
+                                        <span className="font-mono font-semibold whitespace-nowrap">{formatAmount(lineTotal, currency)}</span>
                                     </div>
                                 }
                             />
@@ -98,7 +99,7 @@ const ReceiptPreview = ({ receipt }) => {
                     {discount > 0 && <Row label="Discount" value={<span className="text-brand-orange">-{formatAmount(discount, currency)}</span>} />}
                     {tax > 0 && <Row label="Tax / VAT" value={formatAmount(tax, currency)} />}
 
-                    <Row label="Amount in Words" value={<span className="text-[12px] italic">{numberToWords(total, currency)}</span>} />
+                    <Row label="Amount in Words" value={<span className="text-[13px] italic">{numberToWords(total, currency)}</span>} />
 
                     {/* PAYMENT DETAILS */}
                     {(vendor.bankName || vendor.accountNumber) && (
@@ -122,7 +123,7 @@ const ReceiptPreview = ({ receipt }) => {
                     {notes && <Row label="Notes" value={<span className="text-[13px] text-gray-600">{notes}</span>} isLast />}
                 </div>
 
-                {/* FOOTER / DISCLAIMER */}
+                {/* FOOTER */}
                 <div className="mt-8 pt-6 border-t border-gray-200">
                     <p className="text-[10px] text-gray-500 leading-relaxed">
                         If you have any questions or would like more information, please call{' '}
