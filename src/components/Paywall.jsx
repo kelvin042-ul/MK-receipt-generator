@@ -6,7 +6,7 @@ const MASTER_KEY = 'MK-5K-VIP';
 export default function Paywall({ onUnlock }) {
     const [key, setKey] = useState('');
     const [error, setError] = useState('');
-    const [justUnlocked, setJustUnlocked] = useState(false); // Controls the welcome message
+    const [justUnlocked, setJustUnlocked] = useState(false);
 
     useEffect(() => {
         const urlParams = new URLSearchParams(window.location.search);
@@ -19,7 +19,7 @@ export default function Paywall({ onUnlock }) {
             // 2. Instantly hide the ?key= from the URL bar
             window.history.replaceState({}, document.title, window.location.pathname);
 
-            // 3. Show the welcome message instead of unlocking immediately
+            // 3. Show the welcome message
             setJustUnlocked(true);
         }
     }, []);
@@ -30,7 +30,9 @@ export default function Paywall({ onUnlock }) {
 
         if (cleanKey === MASTER_KEY) {
             localStorage.setItem('mk_license', cleanKey);
-            onUnlock();
+
+            // This reloads the page to fix the blank screen bug when typing the key manually
+            window.location.reload();
         } else {
             setError('Invalid key. Please check your Selar receipt.');
         }
@@ -70,7 +72,7 @@ export default function Paywall({ onUnlock }) {
         );
     }
 
-    // The normal Lock screen (for people who didn't pay yet)
+    // The normal Lock screen
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-brand-navy/80 backdrop-blur-sm">
             <div className="w-full max-w-md bg-white rounded-2xl p-6 sm:p-8 text-center shadow-2xl">
@@ -103,7 +105,7 @@ export default function Paywall({ onUnlock }) {
                 <div className="mt-6 pt-6 border-t border-gray-100">
                     <p className="text-xs text-gray-500 mb-3">Don't have a key yet?</p>
                     <a
-                        href="https://selar.co/mk-receipt" // <--- REPLACE THIS WITH YOUR SELAR LINK
+                        href="https://selar.com/mk-receipt" // <--- ENSURE THIS IS YOUR ACTUAL SELAR LINK
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-block w-full py-3.5 bg-gray-100 text-brand-navy font-semibold rounded-xl hover:bg-gray-200 transition-colors"
