@@ -1,27 +1,3 @@
-/**
- * AURA RECEIPT — Generator Page
- * ------------------------------------------------------------
- * Simple by default. Advanced behind one tap.
- *
- * Layout:
- *   Desktop (lg+): 2-col grid — form left, sticky preview right
- *   Mobile:        stacked — form top, preview below, sticky bar bottom
- *
- * Validation:
- *   - Required: businessName, phone, customerName, ≥1 item with price > 0
- *   - Inline errors appear after the user attempts to share while invalid
- *   - Action buttons disabled until valid
- *
- * Welcome modal:
- *   - Shown once per browser (via LocalStorage `aura.visited`)
- *   - Read synchronously in useState initializer → no flicker
- *
- * Recent receipts:
- *   - Last 5 shared docs, restorable into the form for resend
- *   - Refreshed via onSaved callback from ActionBar
- * ------------------------------------------------------------
- */
-
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useReceipt } from '../hooks/useReceipt';
 import { loadRecent } from '../utils/storage';
@@ -36,11 +12,24 @@ import ReceiptPreview from '../components/ReceiptPreview';
 import ActionBar from '../components/ActionBar';
 import DocTypeToggle from '../components/DocTypeToggle';
 import RecentReceipts from '../components/RecentReceipts';
+import Paywall from '../components/Paywall';
 
-const VISITED_KEY = 'aura.visited';
+const VISITED_KEY = 'mk.visited';
 
 const Generator = () => {
     const receipt = useReceipt();
+
+    // 1. Check if this phone already unlocked the app
+    const [isUnlocked, setIsUnlocked] = useState(() => {
+        return localStorage.getItem('mk_license') !== null;
+    });
+
+    // 2. If not unlocked, show ONLY the paywall
+    if (!isUnlocked) {
+        return <Paywall onUnlock={() => setIsUnlocked(true)} />;
+    }
+
+    // ... rest of your Generator code continues below ...
 
     // ------------------------------------------------------------
     // Welcome modal — read synchronously before first paint
