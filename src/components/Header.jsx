@@ -20,7 +20,7 @@ const Header = () => {
                     </div>
                     <div className="leading-tight">
                         <div className="text-[14px] font-bold tracking-tight text-brand-ink">
-                            Aura Receipt
+                            MK Receipt
                         </div>
                         <div className="text-[10px] font-medium text-gray-400 tracking-wide">
                             Receipt &amp; Invoice Generator

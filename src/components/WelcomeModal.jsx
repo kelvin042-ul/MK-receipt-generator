@@ -59,7 +59,7 @@ const WelcomeModal = ({ onClose }) => {
 
                     {/* Title */}
                     <h2 className="text-[20px] font-bold tracking-tight text-brand-ink">
-                        Welcome to Aura Receipt
+                        Welcome to MK Receipt
                     </h2>
 
                     {/* Body */}
@@ -73,11 +73,11 @@ const WelcomeModal = ({ onClose }) => {
                     <div className="mt-5 space-y-2 text-left">
                         <div className="flex items-center gap-2.5 text-[12px] text-gray-600">
                             <Zap size={14} className="text-brand-purple flex-shrink-0" />
-                            <span>Works offline, loads instantly</span>
+                            <span>Loads instantly</span>
                         </div>
                         <div className="flex items-center gap-2.5 text-[12px] text-gray-600">
                             <ShieldCheck size={14} className="text-brand-purple flex-shrink-0" />
-                            <span>No signup, no server, fully private</span>
+                            <span>No signup, fully private</span>
                         </div>
                         <div className="flex items-center gap-2.5 text-[12px] text-gray-600">
                             <Sparkles size={14} className="text-brand-purple flex-shrink-0" />
@@ -96,7 +96,7 @@ const WelcomeModal = ({ onClose }) => {
 
                     {/* Footer */}
                     <p className="mt-3 text-[10px] font-medium tracking-wider text-gray-400 uppercase">
-                        Free · No signup · Works offline
+                        Free · No signup
                     </p>
 
                 </div>
